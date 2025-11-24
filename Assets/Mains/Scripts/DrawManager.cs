@@ -45,6 +45,8 @@ public class DrawManager : MonoBehaviour
             _beehive.Begin();
 
             _player.gravityScale = 1;
+
+            LevelManager.OnDrawEnd?.Invoke();
         }
     }
 }
