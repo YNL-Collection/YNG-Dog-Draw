@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class LevelManager : MonoBehaviour
@@ -8,6 +9,8 @@ public class LevelManager : MonoBehaviour
     public static Action OnDogBit;    // Bees call this when hit the dog
     public static Action OnLevelWin;
     public static Action OnLevelLose;
+
+    [SerializeField] private List<Level> _levels = new();
 
     private bool dogIsBit = false;
     private Coroutine survivalRoutine;
