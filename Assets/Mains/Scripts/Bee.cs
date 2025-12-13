@@ -8,7 +8,7 @@ public class BeeAI : MonoBehaviour
     public float speed = 3f;
     public float avoidForce = 5f;
     public float rayDistance = 1f;
-    public float wanderStrength = 0.5f; // randomness in movement
+    public float wanderStrength = 0.5f; 
 
     [Header("Bounce Settings")]
     public float bounceDistance = 0.5f;
