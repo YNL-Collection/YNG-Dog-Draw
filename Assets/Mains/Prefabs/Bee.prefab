@@ -163,13 +163,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 0}
-  speed: 3
+  speed: 10
   avoidForce: 5
   rayDistance: 1
-  wanderStrength: 0.5
-  bounceDistance: 1
+  wanderStrength: 1
+  bounceDistance: 1.5
   bounceDuration: 0.2
-  bounceRandomness: 1
+  bounceRandomness: 3
 --- !u!61 &3195415387880674559
 BoxCollider2D:
   m_ObjectHideFlags: 0
