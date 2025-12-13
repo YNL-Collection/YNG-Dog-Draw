@@ -135,7 +135,7 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 0.1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_GravityScale: 1
@@ -167,7 +167,7 @@ MonoBehaviour:
   avoidForce: 5
   rayDistance: 1
   wanderStrength: 1
-  bounceDistance: 1.5
+  bounceDistance: 3
   bounceDuration: 0.2
   bounceRandomness: 3
 --- !u!61 &3195415387880674559
