@@ -8,12 +8,13 @@ public class BeeAI : MonoBehaviour
     public float speed = 3f;
     public float avoidForce = 5f;
     public float rayDistance = 1f;
-    public float wanderStrength = 0.5f; 
+    public float wanderStrength = 0.5f;
 
     [Header("Bounce Settings")]
-    public float bounceDistance = 0.5f;
-    public float bounceDuration = 0.3f;
-    public float bounceRandomness = 0.5f;
+    public float bounceDistance = 1.5f;
+    public float bounceDuration = 0.15f;
+    public float bounceRandomness = 1.5f;
+    public float initialBounceForce = 15f;
 
     private Rigidbody2D rb;
     private bool isBouncing;
@@ -32,7 +33,6 @@ public class BeeAI : MonoBehaviour
         Vector2 toTarget = ((Vector2)target.position - rb.position).normalized;
         Vector2 avoid = Vector2.zero;
 
-        // Multi-ray obstacle avoidance (like a "feelers" system)
         int rayCount = 5;
         float spread = 60f;
         for (int i = 0; i < rayCount; i++)
@@ -47,7 +47,6 @@ public class BeeAI : MonoBehaviour
             }
         }
 
-        // Add a little wander so they don’t all follow identical paths
         Vector2 wander = Random.insideUnitCircle * wanderStrength;
 
         Vector2 finalDir = (toTarget + avoid + wander).normalized;
@@ -56,20 +55,31 @@ public class BeeAI : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (isBouncing) return;
-        if (collision.collider.CompareTag("Wall"))
+        if (collision.collider.CompareTag("Wall") || collision.collider.CompareTag("Player"))
         {
             Vector2 normal = collision.contacts[0].normal;
-            StartCoroutine(SmoothBounce(normal));
+
+            if (isBouncing)
+            {
+                StopAllCoroutines();
+            }
+            StartCoroutine(SavageBounce(normal));
         }
     }
 
-    private IEnumerator SmoothBounce(Vector2 normal)
+    private IEnumerator SavageBounce(Vector2 normal)
     {
         isBouncing = true;
-        rb.linearVelocity = Vector2.zero;
 
-        Vector2 randomDir = (normal + Random.insideUnitCircle * bounceRandomness).normalized;
+        // Dừng ong trước khi bật
+        rb.linearVelocity = Vector2.zero;
+        rb.AddForce(normal * initialBounceForce, ForceMode2D.Impulse);
+
+        yield return new WaitForSeconds(Time.fixedDeltaTime);
+
+        Vector2 randomOffset = Random.insideUnitCircle * bounceRandomness;
+        Vector2 randomDir = (normal + randomOffset).normalized;
+
         Vector2 startPos = rb.position;
         Vector2 endPos = startPos + randomDir * bounceDistance;
 
@@ -99,6 +109,14 @@ public class BeeAI : MonoBehaviour
         if (rb == null) return;
         Gizmos.color = Color.yellow;
         Vector2 dir = target ? ((Vector2)target.position - rb.position).normalized : (Vector2)transform.right;
-        Gizmos.DrawLine(rb.position, rb.position + dir * rayDistance);
+
+        int rayCount = 5;
+        float spread = 60f;
+        for (int i = 0; i < rayCount; i++)
+        {
+            float angle = -spread / 2 + (spread / (rayCount - 1)) * i;
+            Vector2 rayDir = Quaternion.Euler(0, 0, angle) * dir;
+            Gizmos.DrawLine(rb.position, rb.position + rayDir * rayDistance);
+        }
     }
 }
