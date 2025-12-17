@@ -5,9 +5,57 @@ using UnityEngine.SceneManagement;
 
 public class LoadingScene : Singleton<LoadingScene>
 {
+    [Header("UI Groups")]
     public List<GameObject> uiGameplay;
     public List<GameObject> uiMenu;
 
+    [Header("Canvas (Screen Space - Camera)")]
+    public Canvas mainCanvas;   // Canvas UI dùng Screen Space - Camera
+
+    protected override void Awake()
+    {
+        base.Awake();
+        DontDestroyOnLoad(gameObject);
+
+        // Nếu chưa gán Canvas thủ công
+        if (mainCanvas == null)
+            mainCanvas = GetComponentInChildren<Canvas>();
+    }
+
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnAnySceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnAnySceneLoaded;
+    }
+
+    // ======================= AUTO ASSIGN CAMERA =======================
+    void OnAnySceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        AssignCameraForCanvas();
+    }
+
+    void AssignCameraForCanvas()
+    {
+        if (mainCanvas == null) return;
+
+        Camera cam = Camera.main;
+
+        if (cam == null)
+        {
+            Debug.LogWarning("⚠ Không tìm thấy MainCamera trong scene");
+            return;
+        }
+
+        mainCanvas.renderMode = RenderMode.ScreenSpaceCamera;
+        mainCanvas.worldCamera = cam;
+        mainCanvas.planeDistance = 1f;
+    }
+
+    // ======================= LOAD MAIN GAME =======================
     public void LoadMainGame()
     {
         StartCoroutine(LoadMainGameAsync());
@@ -41,6 +89,7 @@ public class LoadingScene : Singleton<LoadingScene>
         SceneManager.sceneLoaded -= OnMainGameLoaded;
     }
 
+    // ======================= LOAD MENU =======================
     public void LoadMenu()
     {
         StartCoroutine(LoadMenuAsync());

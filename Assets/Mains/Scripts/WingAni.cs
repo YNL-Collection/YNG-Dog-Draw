@@ -7,9 +7,25 @@ public class WingAni : MonoBehaviour
     public GameObject[] Wing;
     public float delay = 0.1f;
 
-    private void Start()
+    private Coroutine wingCoroutine;
+
+    private void OnEnable()
     {
-        StartCoroutine(LoopCanh());
+        if (wingCoroutine != null)
+        {
+            StopCoroutine(wingCoroutine);
+        }
+
+        wingCoroutine = StartCoroutine(LoopCanh());
+    }
+
+    private void OnDisable()
+    {
+        if (wingCoroutine != null)
+        {
+            StopCoroutine(wingCoroutine);
+            wingCoroutine = null;
+        }
     }
 
     IEnumerator LoopCanh()
@@ -18,8 +34,12 @@ public class WingAni : MonoBehaviour
         {
             for (int i = 0; i < Wing.Length; i++)
             {
+                if (Wing[i] == null) continue;
+
                 foreach (GameObject c in Wing)
-                    c.SetActive(false);
+                {
+                    if (c != null) c.SetActive(false);
+                }
 
                 Wing[i].SetActive(true);
 
