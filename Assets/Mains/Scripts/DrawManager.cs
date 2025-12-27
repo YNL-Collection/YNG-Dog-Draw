@@ -11,27 +11,25 @@ public class DrawManager : MonoBehaviour
     [Header("Limit")]
     public float MaxLength = 3f;
 
-    [SerializeField] private Rigidbody2D _player;
+    [Header("UI")]
     [SerializeField] private Image _barFill;
+    [SerializeField] private Image Star1;
+    [SerializeField] private Image Star2;
+    [SerializeField] private Image Star3;
 
     private Line _currentLine;
     private Vector2 _previousMousePos;
     private bool _isDrawing;
     private float _currentLength;
 
-    // ⭐ trạng thái
     private bool _waitingLeaveGround;
     private bool _touchingGroundWhileDrawing;
 
     private const string GROUND_LAYER_NAME = "Ground";
     private int _groundLayer;
 
-    private Beehive[] _beehives;
-
     private void Awake()
     {
-        _beehives = FindObjectsOfType<Beehive>();
-
         _groundLayer = LayerMask.NameToLayer(GROUND_LAYER_NAME);
         if (_groundLayer == -1)
             Debug.LogError("Layer 'Ground' chưa được tạo!");
@@ -42,7 +40,6 @@ public class DrawManager : MonoBehaviour
         Vector3 mouse3D = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         Vector2 mousePos = new Vector2(mouse3D.x, mouse3D.y);
 
-        // ================= MOUSE DOWN =================
         if (Input.GetMouseButtonDown(0))
         {
             _isDrawing = true;
@@ -57,10 +54,8 @@ public class DrawManager : MonoBehaviour
             StartNewLine(mousePos);
         }
 
-        // ================= MOUSE HOLD =================
         if (Input.GetMouseButton(0) && _isDrawing)
         {
-            // ⏳ Chờ rời Ground
             if (_waitingLeaveGround)
             {
                 if (!IsOnGround(mousePos))
@@ -78,7 +73,6 @@ public class DrawManager : MonoBehaviour
             if (_currentLine == null)
                 return;
 
-            // 🚫 Đang vẽ mà chạm Ground → KHÔNG vẽ
             if (IsOnGround(mousePos))
             {
                 _touchingGroundWhileDrawing = true;
@@ -90,7 +84,6 @@ public class DrawManager : MonoBehaviour
 
             float distance = Vector2.Distance(mousePos, _previousMousePos);
 
-            // 🚫 Giới hạn độ dài
             if (_currentLength + distance >= MaxLength)
             {
                 float remain = MaxLength - _currentLength;
@@ -106,10 +99,10 @@ public class DrawManager : MonoBehaviour
                 if (_barFill != null)
                     _barFill.fillAmount = 0f;
 
+                UpdateStars();
                 return;
             }
 
-            // ✏️ Vẽ bình thường
             if (distance > _pointDistance)
             {
                 _currentLine.SetPosition(mousePos);
@@ -118,10 +111,11 @@ public class DrawManager : MonoBehaviour
 
                 if (_barFill != null)
                     _barFill.fillAmount = (MaxLength - _currentLength) / MaxLength;
+
+                UpdateStars();
             }
         }
 
-        // ================= MOUSE UP =================
         if (Input.GetMouseButtonUp(0) && _isDrawing)
         {
             EndDrawAndCallBeehive();
@@ -130,7 +124,6 @@ public class DrawManager : MonoBehaviour
         }
     }
 
-    // ================= CREATE LINE =================
     private void StartNewLine(Vector2 pos)
     {
         _currentLine = Instantiate(_linePrefab, pos, Quaternion.identity);
@@ -140,11 +133,22 @@ public class DrawManager : MonoBehaviour
         if (_barFill != null)
             _barFill.fillAmount = 1f;
 
-        if (_player != null)
-            _player.gravityScale = 0;
+        if (Star1 != null) Star1.enabled = true;
+        if (Star2 != null) Star2.enabled = true;
+        if (Star3 != null) Star3.enabled = true;
     }
 
-    // ================= CHECK GROUND =================
+    private void UpdateStars()
+    {
+        float oneStar = MaxLength / 3f;
+
+        if (Star3 != null)
+            Star3.enabled = _currentLength < oneStar;
+
+        if (Star2 != null)
+            Star2.enabled = _currentLength < oneStar * 2f;
+    }
+
     private bool IsOnGround(Vector2 pos)
     {
         Collider2D hit = Physics2D.OverlapPoint(pos);
@@ -153,7 +157,6 @@ public class DrawManager : MonoBehaviour
         return hit.gameObject.layer == _groundLayer;
     }
 
-    // ================= END DRAW =================
     private void EndDrawAndCallBeehive()
     {
         if (_currentLine != null)
@@ -162,13 +165,28 @@ public class DrawManager : MonoBehaviour
         _currentLine = null;
         _isDrawing = false;
 
-        foreach (var hive in _beehives)
-        {
-            if (hive != null)
-                hive.Begin();
-        }
+        LevelManager.Instance.StartCountTime();
 
-        if (_player != null)
-            _player.gravityScale = 1;
+        Beehive[] beehives = FindObjectsOfType<Beehive>();
+        foreach (var hive in beehives)
+        {
+            hive.Begin();
+        }
+    }
+
+    public void ResetDrawUI()
+    {
+        _currentLine = null;
+        _isDrawing = false;
+        _currentLength = 0f;
+        _waitingLeaveGround = false;
+        _touchingGroundWhileDrawing = false;
+
+        if (_barFill != null)
+            _barFill.fillAmount = 1f;
+
+        if (Star1 != null) Star1.enabled = true;
+        if (Star2 != null) Star2.enabled = true;
+        if (Star3 != null) Star3.enabled = true;
     }
 }

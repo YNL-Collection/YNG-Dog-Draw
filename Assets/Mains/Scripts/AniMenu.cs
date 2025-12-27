@@ -11,37 +11,37 @@ public class AniMenu : MonoBehaviour
     public GameObject Bee2;
 
     [Header("Positions")]
-    public Vector2 PoA = new Vector2(1.2f, -1.06f);
-    public Vector2 PoB = new Vector2(10f, -1.06f);
+    public Vector2 PoA = new Vector2(1.6f, -1f);
+    public Vector2 PoB = new Vector2(10f, -1f);
 
     [Header("Jump / Rotate / Squash")]
-    public float jumpHeight = 2.5f;
-    public float jumpDuration = 1f;
-    public float rotateAngle = -25f;
-    public float rotateDuration = 0.5f;
+    public float jumpHeight = 3f;
+    public float jumpDuration = 0.7f;
+    public float rotateAngle = -35f;
+    public float rotateDuration = 0.25f;
     public float throwDelay = 0.2f;
     public float dogThrowDuration = 0.2f;
-    public float pineThrowDuration = 0.6f;
+    public float pineThrowDuration = 0.3f;
     public float squashSpeed = 12f;
     public float squashIntensity = 0.02f;
-    public float squashDuration = 0.2f;
+    public float squashDuration = 1f;
 
     [Header("Beehive Swing")]
     public float firstSwingAngle = -20f;
     public float firstSwingDuration = 0.1f;
     public float swingAngle = 15f;
     public float swingDuration = 0.2f;
-    public int swingLoops = 5;
+    public int swingLoops = 3;
 
     [Header("Chase Settings")]
-    public float beeScaleDuration = 0.25f;
-    public float dogRunDuration = 1.0f;
+    public float beeScaleDuration = 0.025f;
+    public float dogRunDuration = 1f;
     public float beeRunDuration = 1.3f;
-    public float dogRunDelay = 0.2f;
+    public float dogRunDelay = 0.1f;
 
     [Header("Dog Run Animation")]
     public float runBobHeight = 0.08f;
-    public float runBobSpeed = 18f;
+    public float runBobSpeed = 20f;
     public float runSquash = 0.03f;
 
     Vector3 pineStartPos;
@@ -121,11 +121,7 @@ public class AniMenu : MonoBehaviour
         Vector3 beeTarget = PoB;
 
         StartCoroutine(MoveTo(Bee1.transform, beeTarget, beeRunDuration));
-        StartCoroutine(MoveTo(
-            Bee2.transform,
-            beeTarget + new Vector3(0.3f, 0.4f, 0),
-            beeRunDuration
-        ));
+        StartCoroutine(MoveTo(Bee2.transform, beeTarget + new Vector3(0.3f, 0.4f, 0), beeRunDuration));
 
         yield return new WaitForSeconds(dogRunDelay);
 

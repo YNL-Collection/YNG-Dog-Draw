@@ -9,8 +9,7 @@ public class Dog : MonoBehaviour
     {
         if (collision.collider.CompareTag("Bee"))
         {
-            LevelManager.OnDogBit?.Invoke();
-
+            LevelManager.Instance.Loss();
             _normal.SetActive(false);
             _cry.SetActive(true);
         }

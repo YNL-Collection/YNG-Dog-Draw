@@ -1,67 +1,163 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
-public class LevelManager : MonoBehaviour
+public class LevelManager : Singleton<LevelManager>
 {
-    public static Action OnDrawEnd;   // Other scripts call this
-    public static Action OnDogBit;    // Bees call this when hit the dog
-    public static Action OnLevelWin;
-    public static Action OnLevelLose;
+    [Header("Time")]
+    public TextMeshProUGUI TimeText;
+    public TextMeshProUGUI LevelText;
+    public float TimeRemain = 6f;
 
-    [SerializeField] private List<Level> _levels = new();
+    [Header("Level")]
+    public List<GameObject> levels;
+    public Transform levelParent;
 
-    private bool dogIsBit = false;
-    private Coroutine survivalRoutine;
+    private int currentLevelIndex;
+    private GameObject currentLevel;
+    private bool isCounting;
+    private bool isGameOver;
 
-    private void OnEnable()
+    private const string LEVEL_KEY = "CURRENT_LEVEL";
+
+    private void Start()
     {
-        OnDrawEnd += HandleDrawEnd;
-        OnDogBit += HandleDogBit;
+        LoadLevelIndex();
+        SpawnLevel(currentLevelIndex);
     }
 
-    private void OnDisable()
+    private void Update()
     {
-        OnDrawEnd -= HandleDrawEnd;
-        OnDogBit -= HandleDogBit;
-    }
+        if (!isCounting || isGameOver) return;
 
-    private void HandleDrawEnd()
-    {
-        // Reset state
-        dogIsBit = false;
+        TimeRemain -= Time.deltaTime;
+        TimeRemain = Mathf.Max(TimeRemain, 0f);
 
-        // Start survival countdown
-        if (survivalRoutine != null)
-            StopCoroutine(survivalRoutine);
+        UpdateTimeUI();
 
-        survivalRoutine = StartCoroutine(SurvivalTimer());
-    }
-
-    private void HandleDogBit()
-    {
-        if (dogIsBit) return;
-        dogIsBit = true;
-
-        if (survivalRoutine != null)
+        if (TimeRemain <= 0f)
         {
-            StopCoroutine(survivalRoutine);
-        }
-
-        OnLevelLose?.Invoke();
-        Debug.Log("Level Lose!");
-    }
-
-    private IEnumerator SurvivalTimer()
-    {
-        yield return new WaitForSeconds(5f);
-
-        if (!dogIsBit)
-        {
-            OnLevelWin?.Invoke();
-
-            Debug.Log("Level Won!");
+            Win();
         }
     }
+
+    #region LEVEL LOGIC
+
+    private void SpawnLevel(int index)
+    {
+        if (currentLevel != null)
+            Destroy(currentLevel);
+
+        ClearAllLines();
+
+        DrawManager draw = FindObjectOfType<DrawManager>();
+        if (draw != null)
+            draw.ResetDrawUI();
+
+        index = Mathf.Clamp(index, 0, levels.Count - 1);
+
+        currentLevel = Instantiate(levels[index], levelParent);
+
+        TimeRemain = 6f;
+        isCounting = false;
+        isGameOver = false;
+
+        UpdateTimeUI();
+        UpdateLevelUI();
+    }
+
+    public void StartCountTime()
+    {
+        if (isGameOver) return;
+        isCounting = true;
+    }
+
+    public void Win()
+    {
+        if (isGameOver) return;
+
+        isGameOver = true;
+        isCounting = false;
+
+        Debug.Log("WIN!");
+
+        currentLevelIndex++;
+        SaveLevelIndex();
+
+        PopupManager.Instance.ShowPopup_Win();
+    }
+
+
+    public void Loss()
+    {
+        if (isGameOver) return;
+
+        isGameOver = true;
+        isCounting = false;
+
+        Debug.Log("LOSS!");
+
+        Invoke(nameof(ReloadLevel), 1.5f);
+    }
+
+    private void LoadNextLevel()
+    {
+        SpawnLevel(currentLevelIndex);
+    }
+
+    private void ReloadLevel()
+    {
+        SpawnLevel(currentLevelIndex);
+    }
+
+    #endregion
+
+    #region UI
+
+    private void UpdateTimeUI()
+    {
+        if (TimeText != null)
+            TimeText.text = Mathf.CeilToInt(TimeRemain).ToString();
+    }
+
+    private void UpdateLevelUI()
+    {
+        if (LevelText != null)
+            LevelText.text = "LEVEL " + (currentLevelIndex + 1);
+    }
+
+    #endregion
+
+    #region SAVE / LOAD
+
+    private void SaveLevelIndex()
+    {
+        PlayerPrefs.SetInt(LEVEL_KEY, currentLevelIndex);
+        PlayerPrefs.Save();
+    }
+
+    public void LoadNextLevelByPopup()
+    {
+        SpawnLevel(currentLevelIndex);
+    }
+
+    private void LoadLevelIndex()
+    {
+        currentLevelIndex = PlayerPrefs.GetInt(LEVEL_KEY, 0);
+    }
+
+    #endregion
+
+    #region LINE CLEANUP
+
+    private void ClearAllLines()
+    {
+        Line[] lines = FindObjectsOfType<Line>();
+        foreach (var line in lines)
+        {
+            Destroy(line.gameObject);
+        }
+    }
+
+    #endregion
 }

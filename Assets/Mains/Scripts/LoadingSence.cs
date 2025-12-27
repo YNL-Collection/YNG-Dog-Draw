@@ -10,14 +10,13 @@ public class LoadingScene : Singleton<LoadingScene>
     public List<GameObject> uiMenu;
 
     [Header("Canvas (Screen Space - Camera)")]
-    public Canvas mainCanvas;   // Canvas UI dùng Screen Space - Camera
+    public Canvas mainCanvas;   
 
     protected override void Awake()
     {
         base.Awake();
         DontDestroyOnLoad(gameObject);
 
-        // Nếu chưa gán Canvas thủ công
         if (mainCanvas == null)
             mainCanvas = GetComponentInChildren<Canvas>();
     }
@@ -32,7 +31,6 @@ public class LoadingScene : Singleton<LoadingScene>
         SceneManager.sceneLoaded -= OnAnySceneLoaded;
     }
 
-    // ======================= AUTO ASSIGN CAMERA =======================
     void OnAnySceneLoaded(Scene scene, LoadSceneMode mode)
     {
         AssignCameraForCanvas();
@@ -55,7 +53,6 @@ public class LoadingScene : Singleton<LoadingScene>
         mainCanvas.planeDistance = 1f;
     }
 
-    // ======================= LOAD MAIN GAME =======================
     public void LoadMainGame()
     {
         StartCoroutine(LoadMainGameAsync());
@@ -89,7 +86,6 @@ public class LoadingScene : Singleton<LoadingScene>
         SceneManager.sceneLoaded -= OnMainGameLoaded;
     }
 
-    // ======================= LOAD MENU =======================
     public void LoadMenu()
     {
         StartCoroutine(LoadMenuAsync());
