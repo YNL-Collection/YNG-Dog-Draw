@@ -10,7 +10,9 @@ public class LoadingScene : Singleton<LoadingScene>
     public List<GameObject> uiMenu;
 
     [Header("Canvas (Screen Space - Camera)")]
-    public Canvas mainCanvas;   
+    public Canvas mainCanvas;
+
+    private LineDrawerProvider _provider;
 
     protected override void Awake()
     {
@@ -19,6 +21,8 @@ public class LoadingScene : Singleton<LoadingScene>
 
         if (mainCanvas == null)
             mainCanvas = GetComponentInChildren<Canvas>();
+
+        _provider = GetComponent<LineDrawerProvider>();
     }
 
     private void OnEnable()
@@ -34,6 +38,21 @@ public class LoadingScene : Singleton<LoadingScene>
     void OnAnySceneLoaded(Scene scene, LoadSceneMode mode)
     {
         AssignCameraForCanvas();
+
+        var lineManager = FindFirstObjectByType<DrawManager>();
+
+        if (lineManager != null)
+        {
+            var levelManager = lineManager.GetComponent<LevelManager>();
+
+            lineManager._barFill = _provider._barFill;
+            lineManager.Star1 = _provider.Star1;
+            lineManager.Star2 = _provider.Star2;
+            lineManager.Star3 = _provider.Star3;
+
+            levelManager.TimeText = _provider.TimeText;
+            levelManager.LevelText = _provider.LevelText;
+        }
     }
 
     void AssignCameraForCanvas()

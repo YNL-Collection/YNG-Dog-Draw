@@ -12,10 +12,10 @@ public class DrawManager : MonoBehaviour
     public float MaxLength = 3f;
 
     [Header("UI")]
-    [SerializeField] private Image _barFill;
-    [SerializeField] private Image Star1;
-    [SerializeField] private Image Star2;
-    [SerializeField] private Image Star3;
+    [SerializeField] public Image _barFill;
+    [SerializeField] public Image Star1;
+    [SerializeField] public Image Star2;
+    [SerializeField] public Image Star3;
 
     private Line _currentLine;
     private Vector2 _previousMousePos;
